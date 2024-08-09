@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Room</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #E0F7FF, #B3E0FF); /* Gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .form-container {
+            background-color: #FFFFFF; /* White background */
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 80%);
+            animation: pulse 2s infinite;
+            z-index: 0;
+        }
+
+        h1 {
+            color: #003366; /* Darker blue */
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 1s ease-out;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 1s ease-out;
+        }
+
+        label {
+            color: #003366; /* Darker blue */
+            margin-bottom: 5px;
+            text-align: left;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #4A90E2; /* Medium blue border */
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            background-color: #F7F9FC; /* Light background */
+            color: #333;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        input:focus {
+            border-color: #003366; /* Darker blue on focus */
+            box-shadow: 0 0 5px rgba(0, 51, 102, 0.5); /* Shadow effect */
+            outline: none;
+        }
+
+        button {
+            background-color: #4A90E2; /* Medium blue */
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.3s;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        button:hover {
+            background-color: #357ABD; /* Slightly darker blue */
+            transform: scale(1.05); /* Slightly larger on hover */
+        }
+
+        /* Keyframes for animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 0.1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes bounceIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Join the Chat</h1>
+            <form action="" method="POST">
+                {% csrf_token %}
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" name="username" required>
+                <label for="room">Room Name</label>
+                <input type="text" id="room" placeholder="Enter room name" name="room" required>
+                <button type="submit">Join Room</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

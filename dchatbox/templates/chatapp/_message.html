@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <!-- Load static -->
+    {% load static %}
+    <!-- Include jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        font-family: 'Arial', sans-serif;
+    }
+
+    body {
+        background: linear-gradient(to right, #E0F7FF, #B3E0FF);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .chat-container {
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        padding: 20px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        animation: fadeIn 1s ease-out;
+        overflow: hidden;
+    }
+
+    h2 {
+        color: #003366;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        position: relative;
+        z-index: 1;
+    }
+
+    .chat-body {
+        width: 100%;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #F7F9FC;
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .message {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .send,
+    .receive {
+        border-radius: 10px;
+        padding: 10px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .send {
+        align-self: flex-end;
+        background-color: #4A90E2;
+        color: white;
+    }
+
+    .receive {
+        align-self: flex-start;
+        background-color: #9CC3D5FF;
+        color: #00203FFF;
+    }
+
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    textarea {
+        width: 100%;
+        height: 80px;
+        padding: 12px;
+        border: 1px solid #4A90E2;
+        border-radius: 10px;
+        background-color: #F7F9FC;
+        color: #333;
+        font-size: 16px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea:focus {
+        border-color: #003366;
+        box-shadow: 0 0 5px rgba(0, 51, 102, 0.5);
+        outline: none;
+    }
+
+    button {
+        background-color: #4A90E2;
+        padding: 12px;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background-color 0.3s, transform 0.3s;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background-color: #357ABD;
+        transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <h2>Chat Room</h2>
+            <div class="chat-body" id="chatContainer">
+                <!-- Example messages -->
+                {% for i in messages %}
+                        {% if i.sender != user %}
+                            <div class="message receive">
+                                <p><strong>{{i.sender}}</strong> - {{i.message}}</p>
+                            </div>
+                        {% else %}
+                            <div class="message send">
+                                <p>{{i.message}}</p>
+                            </div>
+                        {% endif %}
+                {% endfor %}
+                <!-- Add more messages here -->
+            </div>
+            <div class="form-container">
+                <form action="" id="message-form" method="POST">
+                    {% csrf_token %}
+                    <textarea id="msg" name="message" placeholder="Enter your message" required></textarea>
+                    <button class="submit" type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function scrollToBottom() {
+        var chatContainer = document.getElementById("chatContainer");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    const websocketProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsEndpoint = `${websocketProtocol}://${window.location.host}/ws/notification/{{room_name}}/`;
+    const socket = new WebSocket(wsEndpoint);
+
+    socket.onopen = (event) => {
+        console.log("WebSocket connection opened!");
+    };
+
+    socket.onclose = (event) => {
+        console.log("WebSocket connection closed!");
+    };
+
+    document.getElementById('message-form').addEventListener('submit', function(event){
+        event.preventDefault();
+        const message = document.getElementById('msg').value;
+        socket.send(
+            JSON.stringify({
+                'message': message,
+                'room_name': '{{room_name}}',
+                'sender': '{{user}}',
+            })
+        );
+    });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const socket = new WebSocket(wsEndpoint);
+
+    socket.addEventListener("message", (event) => {
+        const messageData = JSON.parse(event.data)['message'];
+        console.log(messageData);
+
+        var sender = messageData['sender'];
+        var message = messageData['message'];
+
+        // Empty the message input field after the message has been sent
+        if (sender == '{{user}}'){
+            document.getElementById('msg').value = '';
+        }
+
+        // Append the message to the chatbox
+        var chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {  // Check if the element exists
+            if (sender != '{{user}}') {
+                chatContainer.innerHTML += '<div class="message receive" style="background-color: #9CC3D5FF; padding: 10px; margin-bottom: 10px; border-radius: 10px;"><p style="color: #00203FFF;"><strong>' + sender + '</strong> - ' + message + '</p></div>';
+            } else {
+                chatContainer.innerHTML += '<div class="message send" style="background-color: #4B88A2FF; padding: 10px; margin-bottom: 10px; border-radius: 10px; align-self: flex-end;"><p style="color: #FCF6F5FF;">'   + message + '</p></div>';
+            }
+            scrollToBottom();
+        } else {
+            console.error("Element with ID 'chatContainer' not found.");
+        }
+    });
+});
+
+</script>
+
+</html>
